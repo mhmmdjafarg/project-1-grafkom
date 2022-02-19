@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>2D CAD</title>
+    <link href="stylesheet" href="style.css">
+
+    <!-- Script -->
+    <script src="script.js"></script>
+    <!-- Vertex Shader -->
+
+    <script id="vertex-shader">
+        uniform vec2 u_resolution;
+
+        void main(){
+            return;
+        }
+    </script>
+
+    <!-- Fragment Shader -->
+    <script id="fragment-shader">
+        precision mediump float;
+
+        uniform vec4 u_color;
+
+        void main(){
+            gl_FragColor = u_color;
+        }
+    </script>
+</head>
+
+<body>
+    <canvas id="canvas">
+
+    </canvas>
+</body>
+
+</html>
