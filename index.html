@@ -8,10 +8,6 @@
 
     <link rel="stylesheet" href="style.css" />
 
-    <!-- Script -->
-    <script src="script.js"></script>
-    <!-- Vertex Shader -->
-
     <!-- vertex shader -->
     <script id="vertex-shader-2d" type="x-shader/x-vertex">
       precision mediump float;
@@ -30,17 +26,63 @@
 
       varying vec3 fragColor;
       void main() {
-          gl_FragColor = vec4(fragColor, 1.0)
-        };
+          gl_FragColor = vec4(fragColor, 1.0);
+        }
     </script>
-  </head>
 
+  </head>
   <body>
     <div class="column left panel" style="background-color: #aaa">
-      <h1>Ini panel</h1>
+      <div class="import-container container">
+        <button id="import-button">import</button>
+      </div>
+      <div class="export-container container">
+        <input placeholder="masukkan nama file" type="text" id="file-name" name="file-name">
+        <button id="export-button">export</button>
+      </div>
+      
+      <p id="title">
+        Elements
+      </p>
+      <div class="container grid-container">
+        <a class="element-option-container line-option-container container">
+          <p id="line-button element-button">Line</p>
+        </a>
+        <a class="element-option-container square-option-container container">
+          <p id="square-button element-button">Square</p>
+        </a>
+        <a class="element-option-container rectangle-option-container container">
+          <p id="rectangle-button element-button">Rectangle</p>
+        </a>
+        <a class="element-option-container polygon-option-container container">
+          <p id="polygon-button element-button">Polygon</p>
+        </a>
+      </div>
+
+      <p id="title">
+        Color
+      </p>
+      <div class="color-picker-container container">
+        <input type="color" id="color-input"/>
+      </div>
+
+      <p id="title">
+        Bantuan
+      </p>
+      <div class="help-container container">
+        <button id="help-button">help</button>
+      </div>
     </div>
+
     <div class="column right" style="background-color: #bbb">
       <canvas id="canvas"> </canvas>
     </div>
+
+    <!-- HELP SECTION -->
+
+
+      <!-- Script -->
+      <script src="script.js"></script>
+      <!-- Vertex Shader -->
   </body>
 </html>

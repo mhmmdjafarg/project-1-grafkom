@@ -31,3 +31,94 @@
     width: 100%;
     height: 100%;
 }
+
+.container {
+  width: 100%;
+  margin: 10px auto;
+}
+
+#import-button, #help-button {
+  width : 100%;
+  padding : 10px;
+  border-radius: 5px;
+}
+
+#title {
+  text-align : center;
+  font-weight: bold;
+  margin: 20px auto;
+}
+
+#file-name {
+  width:75%;
+  border-radius: 5px 0px 0px 5px;
+  border: unset;
+  padding: 10px
+}
+
+#export-button {
+  width:25%;
+  border-radius: 0px 5px 5px 0px;
+  padding: 10px
+}
+
+.export-container {
+  display: flex; 
+  flex-direction :row;
+}
+
+.grid-container {
+  display: grid;
+  column-gap: 5px;
+}
+
+.line-option-container {
+  grid-column-start: 1;
+  grid-column-end: 1;
+
+  grid-row-start: 1;
+  grid-row-end: 1;
+}
+
+.square-option-container {
+  grid-column-start: 2;
+  grid-column-end: 2;
+
+  grid-row-start: 1;
+  grid-row-end: 1;
+}
+
+.rectangle-option-container {
+  grid-column-start: 1;
+  grid-column-end: 1;
+
+  grid-row-start: 2;
+  grid-row-end: 2;
+}
+
+.polygon-option-container {
+  grid-column-start: 2;
+  grid-column-end: 2;
+
+  grid-row-start: 2;
+  grid-row-end: 2;
+}
+
+.element-option-container {
+  height : 50px;
+  width : 100%;
+  background-color: lightgray;
+  text-align: center;
+}
+
+.element-button {
+  background: none;
+}
+
+#color-input {
+  width: 100%;
+}
+
+button {
+  border: unset
+}
