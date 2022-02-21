@@ -12,23 +12,25 @@
     <script src="script.js"></script>
     <!-- Vertex Shader -->
 
-    <script id="vertex-shader">
-      uniform vec2 u_resolution;
-
-      void main(){
-          return;
+    <!-- vertex shader -->
+    <script id="vertex-shader-2d" type="x-shader/x-vertex">
+      precision mediump float;
+      attribute vec2 vPosition;
+      attribute vec3 vColor;
+      varying vec3 fragColor;
+      void main() {
+          fragColor = vColor;
+          gl_Position = vec4(vPosition, 0.0, 1.0);
       }
     </script>
 
-    <!-- Fragment Shader -->
-    <script id="fragment-shader">
+    <!-- fragment shader -->
+    <script id="fragment-shader-2d" type="x-shader/x-fragment">
       precision mediump float;
 
-      uniform vec4 u_color;
-
-      void main(){
-          gl_FragColor = u_color;
-      }
+      varying vec3 fragColor;
+      void main() {
+          gl_FragColor = vec4(fragColor, 1.0);
     </script>
   </head>
 
