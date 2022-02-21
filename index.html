@@ -1,39 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>2D CAD</title>
-    <link href="stylesheet" href="style.css">
+
+    <link rel="stylesheet" href="style.css" />
 
     <!-- Script -->
     <script src="script.js"></script>
     <!-- Vertex Shader -->
 
     <script id="vertex-shader">
-        uniform vec2 u_resolution;
+      uniform vec2 u_resolution;
 
-        void main(){
-            return;
-        }
+      void main(){
+          return;
+      }
     </script>
 
     <!-- Fragment Shader -->
     <script id="fragment-shader">
-        precision mediump float;
+      precision mediump float;
 
-        uniform vec4 u_color;
+      uniform vec4 u_color;
 
-        void main(){
-            gl_FragColor = u_color;
-        }
+      void main(){
+          gl_FragColor = u_color;
+      }
     </script>
-</head>
+  </head>
 
-<body>
-    <canvas id="canvas">
-
-    </canvas>
-</body>
-
+  <body>
+    <div class="column left panel" style="background-color: #aaa">
+      <h1>Ini panel</h1>
+    </div>
+    <div class="column right" style="background-color: #bbb">
+      <canvas id="canvas"> </canvas>
+    </div>
+  </body>
 </html>
