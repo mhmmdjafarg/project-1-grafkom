@@ -1,5 +1,61 @@
 "use strict";
 
+/**
+ * Resize a canvas to match the size its displayed.
+ * @param {HTMLCanvasElement} canvas The canvas to resize.
+ * @param {number} [multiplier] amount to multiply by.
+ *    Pass in window.devicePixelRatio for native pixels.
+ * @return {boolean} true if the canvas was resized.
+ * @memberOf module:webgl-utils
+ */
+function resizeCanvasToDisplaySize(canvas, multiplier) {
+  multiplier = multiplier || 1;
+  const width = (canvas.clientWidth * multiplier) | 0;
+  const height = (canvas.clientHeight * multiplier) | 0;
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+    return true;
+  }
+  return false;
+}
+
+var createProgram = function (gl, vertexShader, fragmentShader) {
+  var program = gl.createProgram();
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    console.error("Error linking program!", gl.getProgramInfoLog(program));
+    gl.deleteProgram(program);
+    return;
+  }
+  gl.validateProgram(program);
+  if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
+    console.error("Error validating program!", gl.getProgramInfoLog(program));
+    gl.deleteProgram(program);
+    return;
+  }
+
+  return program;
+};
+
+var createShader = function (gl, type, source) {
+  var shader = gl.createShader(type);
+
+  gl.shaderSource(shader, source);
+
+  gl.compileShader(shader);
+
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    console.error("Error compiling shader!", gl.getShaderInfoLog(shader));
+    gl.deleteShader(shader);
+    return;
+  }
+
+  return shader;
+};
+
 function main() {
   // Get canvas context
   const canvas = document.getElementById("canvas");
@@ -14,83 +70,60 @@ function main() {
   canvas.width = canvas.clientWidth;
   canvas.height = canvas.clientHeight;
 
-  // viewport
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
-  var createShader = function (type, source) {
-    var shader = gl.createShader(type);
-
-    gl.shaderSource(shader, source);
-
-    gl.compileShader(shader);
-
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      console.error("Error compiling shader!", gl.getShaderInfoLog(shader));
-      gl.deleteShader(shader);
-      return;
-    }
-
-    return shader;
-  };
-
-  var createProgram = function (vertexShader, fragmentShader) {
-    var program = gl.createProgram();
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.error("Error linking program!", gl.getProgramInfoLog(program));
-      gl.deleteProgram(program);
-      return;
-    }
-    gl.validateProgram(program);
-    if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
-      console.error("Error validating program!", gl.getProgramInfoLog(program));
-      gl.deleteProgram(program);
-      return;
-    }
-
-    return program;
-  };
-
-  // Process shaders
+  // create GLSL shaders, upload the GLSL source, compile the shaders
   var vertShader = createShader(
+    gl,
     gl.VERTEX_SHADER,
     document.querySelector("#vertex-shader-2d").text
   );
   var fragShader = createShader(
+    gl,
     gl.FRAGMENT_SHADER,
     document.querySelector("#fragment-shader-2d").text
   );
 
-  // Create program
-  var program = createProgram(vertShader, fragShader);
+  // Link the two shaders into a program
+  var program = createProgram(gl, vertShader, fragShader);
+
+  // Look up where data stored
+  var positionLocation = gl.getAttribLocation(program, "vPosition");
+  var colorLocation = gl.getAttribLocation(program, "a_color");
+  var resolutionUniformLocation = gl.getUniformLocation(
+    program,
+    "u_resolution"
+  );
+
+  // Create a buffer for vertices position
+  var positionBuffer = gl.createBuffer();
+  // Create a buffer for the colors.
+  var colorBuffer = gl.createBuffer();
+
+  // Clear canvas
+  gl.clearColor(0, 0, 0, 0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
 
   function drawObject(program, vertices, mode, count) {
-    // Look up where data stored
-    var positionLocation = gl.getAttribLocation(program, "vPosition");
-    var colorLocation = gl.getAttribLocation(program, "vColor");
+    resizeCanvasToDisplaySize(gl.canvas);
 
-    // Create a buffer for vertices position
-    var positionBuffer = gl.createBuffer();
+    // Tell WebGL how to convert from clip space to pixels
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-	    // Clear canvas
-		gl.clear(gl.COLOR_BUFFER_BIT);
-// Tell to use program
+    // Tell to use program
     gl.useProgram(program);
 
+    // Turn on the position attribute
+    gl.enableVertexAttribArray(positionLocation);
 
-
-    // Bind position buffer
+    // Bind the position buffer.
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
     // Tell the attribute how to read vertices buffer
     var size = 2;
     var type = gl.FLOAT;
     var normalized = false;
-    var stride = 5 * Float32Array.BYTES_PER_ELEMENT; // Size per vertex
+    var stride = 0; // Size per vertex
     var offset = 0;
     gl.vertexAttribPointer(
       positionLocation,
@@ -101,33 +134,39 @@ function main() {
       offset
     );
 
-    // Tell the attribute how to read color buffer
-    var sizeColor = 2;
-    var typeColor = gl.FLOAT;
-    var offsetColor = 2 * Float32Array.BYTES_PER_ELEMENT; // offset for color
-    gl.vertexAttribPointer(
-      colorLocation,
-      sizeColor,
-      typeColor,
-      normalized,
-      stride,
-      offsetColor
-    );
-
-    // Turn on the attribute
-    gl.enableVertexAttribArray(positionLocation);
+    // Turn on the color attribute
     gl.enableVertexAttribArray(colorLocation);
 
+    // Bind the color buffer.
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    setColors(gl);
+
+    // Tell the color attribute how to get data out of colorBuffer (ARRAY_BUFFER)
+    var size = 4; // 4 components per iteration
+    var type = gl.FLOAT; // the data is 32bit floats
+    var normalize = false; // don't normalize the data
+    var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+    var offset = 0; // start at the beginning of the buffer
+    gl.vertexAttribPointer(
+      colorLocation,
+      size,
+      type,
+      normalize,
+      stride,
+      offset
+    );
+
+    // set the resolution
+    gl.uniform2f(resolutionUniformLocation, canvas.width, canvas.height);
     // Draw the geometry
-	
     gl.drawArrays(mode, 0, count);
   }
-  var vertices = [670,253,1,1,1,
-				1113,425,1,1,1];
 
-  drawObject(program, vertices, gl.LINES,2 );
-  //   Constanta
-  var arrayOfObjects = []; // {vertices, color, type}
+  // Test
+  var vertices = [0, 373, 418, 123, 700, 400];
+  var vertices2 = [800, 373, 400, 123];
+  drawObject(program, vertices, gl.TRIANGLES, 3);
+  drawObject(program, vertices2, gl.LINES, 2);
 
   // Mouse click
   canvas.addEventListener("mousedown", (e) => {
@@ -138,6 +177,23 @@ function main() {
   canvas.addEventListener("mousemove", (e) => {
     // console.log(e);
   });
+}
+
+// Fill the buffer with colors for the 2 triangles
+// that make the rectangle.
+// Note, will put the values in whatever buffer is currently
+// bound to the ARRAY_BUFFER bind point
+function setColors(gl) {
+  // Pick 2 random colors.
+  var r1 = Math.random();
+  var b1 = Math.random();
+  var g1 = Math.random();
+
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([r1, b1, g1, 1, r1, b1, g1, 1, r1, b1, g1, 1]),
+    gl.STATIC_DRAW
+  );
 }
 
 main();

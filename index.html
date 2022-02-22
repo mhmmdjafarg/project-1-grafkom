@@ -12,11 +12,25 @@
     <script id="vertex-shader-2d" type="x-shader/x-vertex">
       precision mediump float;
       attribute vec2 vPosition;
-      attribute vec3 vColor;
-      varying vec3 fragColor;
+      attribute vec4 a_color;
+
+      varying vec4 v_color;
+      uniform vec2 u_resolution;
+
       void main() {
-          fragColor = vColor;
-          gl_Position = vec4(vPosition, 0.0, 1.0);
+          
+          // convert the position from pixels to 0.0 to 1.0
+          vec2 zeroToOne = vPosition / u_resolution;
+       
+          // convert from 0->1 to 0->2
+          vec2 zeroToTwo = zeroToOne * 2.0;
+       
+          // convert from 0->2 to -1->+1 (clip space)
+          vec2 clipSpace = zeroToTwo - 1.0;
+       
+          gl_Position = vec4(clipSpace, 0, 1);
+
+          v_color = a_color;
       }
     </script>
 
@@ -24,10 +38,11 @@
     <script id="fragment-shader-2d" type="x-shader/x-fragment">
       precision mediump float;
 
-      varying vec3 fragColor;
+      varying vec4 v_color;
+      
       void main() {
-          gl_FragColor = vec4(fragColor, 1.0);
-        }
+        gl_FragColor = v_color;
+      }
     </script>
 
   </head>
