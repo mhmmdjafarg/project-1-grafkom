@@ -96,6 +96,7 @@ function main() {
     "u_resolution"
   );
 
+  // Draw whole objects
   function drawScreen(program, arrayOfObjects) {
     // Clear canvas
     gl.clearColor(0, 0, 0, 0);
@@ -171,42 +172,37 @@ function main() {
     let y = event.clientY - rect.top;
     return {
       x: x,
-      y: y
-    }
-}
+      y: y,
+    };
+  }
 
-
-  // Test
-  // var vertices = [0, 373, 418, 123, 700, 400];
-  // var vertices2 = [1, 1, 1130, 1];
-  // // drawObject(program, vertices, gl.TRIANGLES, 3);
-  // drawObject(program, vertices2, gl.LINES, 2);
+  // Initialization of drawing mode
   var arrayOfObjects = [];
-  var idxNow = 0
+  var idxNow = 0;
   var mouseClicked = false;
   const drawMode = {
     LINE: 0,
     SQUARE: 1,
     RECTANGLE: 2,
-    POLYGON: 3
+    POLYGON: 3,
   };
-  var drawing = drawMode.LINE // default
+  var drawing = drawMode.LINE; // default
   // Mouse click
   canvas.addEventListener("mousedown", (e, target) => {
-    mouseClicked = true
+    mouseClicked = true;
     const pos = getMousePosition(canvas, e);
-    const x = pos.x
-    const y = pos.y
+    const x = pos.x;
+    const y = pos.y;
 
-    if (drawing == drawMode.LINE){
+    if (drawing == drawMode.LINE) {
       var object = {
         vertices: [],
         colors: [],
         mode: gl.LINES,
       };
       arrayOfObjects.push(object);
-      arrayOfObjects[idxNow].vertices.push(x,y,x,y);
-      arrayOfObjects[idxNow].colors.push(0,0,0,1,0,0,0,1);
+      arrayOfObjects[idxNow].vertices.push(x, y, x, y);
+      arrayOfObjects[idxNow].colors.push(0, 0, 0, 1, 0, 0, 0, 1);
     }
 
     drawScreen(program, arrayOfObjects);
@@ -214,25 +210,25 @@ function main() {
 
   // Mouse move
   canvas.addEventListener("mousemove", (e) => {
-    if(mouseClicked){
+    if (mouseClicked) {
       const pos = getMousePosition(canvas, e);
-      const x = pos.x
-      const y = pos.y
-      if(drawing == drawMode.LINE){
-        for(var i = 0; i < 2; i++){
+      const x = pos.x;
+      const y = pos.y;
+      if (drawing == drawMode.LINE) {
+        for (var i = 0; i < 2; i++) {
           arrayOfObjects[idxNow].vertices.pop();
         }
-        arrayOfObjects[idxNow].vertices.push(x,y);
-        arrayOfObjects[idxNow].colors.push(0,0,0,1,0,0,0,1);
+        arrayOfObjects[idxNow].vertices.push(x, y);
+        arrayOfObjects[idxNow].colors.push(0, 0, 0, 1, 0, 0, 0, 1);
       }
 
-      drawScreen(program, arrayOfObjects)
+      drawScreen(program, arrayOfObjects);
     }
   });
 
-  canvas.addEventListener("mouseup", function(e){
+  canvas.addEventListener("mouseup", function (e) {
     mouseClicked = false;
-    idxNow++
+    idxNow++;
     // drawScreen(program, arrayOfObjects);
   });
 }
