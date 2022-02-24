@@ -70,6 +70,9 @@ function main() {
   canvas.width = canvas.clientWidth;
   canvas.height = canvas.clientHeight;
 
+  // viewport
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
   // create GLSL shaders, upload the GLSL source, compile the shaders
   var vertShader = createShader(
     gl,
@@ -93,107 +96,145 @@ function main() {
     "u_resolution"
   );
 
-  // Create a buffer for vertices position
-  var positionBuffer = gl.createBuffer();
-  // Create a buffer for the colors.
-  var colorBuffer = gl.createBuffer();
-
-  // Clear canvas
-  gl.clearColor(0, 0, 0, 0);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-
-  function drawObject(program, vertices, mode, count) {
-    resizeCanvasToDisplaySize(gl.canvas);
-
-    // Tell WebGL how to convert from clip space to pixels
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+  function drawScreen(program, arrayOfObjects) {
+    // Clear canvas
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
 
     // Tell to use program
     gl.useProgram(program);
 
-    // Turn on the position attribute
-    gl.enableVertexAttribArray(positionLocation);
-
-    // Bind the position buffer.
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-
-    // Tell the attribute how to read vertices buffer
-    var size = 2;
-    var type = gl.FLOAT;
-    var normalized = false;
-    var stride = 0; // Size per vertex
-    var offset = 0;
-    gl.vertexAttribPointer(
-      positionLocation,
-      size,
-      type,
-      normalized,
-      stride,
-      offset
-    );
-
-    // Turn on the color attribute
-    gl.enableVertexAttribArray(colorLocation);
-
-    // Bind the color buffer.
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    setColors(gl);
-
-    // Tell the color attribute how to get data out of colorBuffer (ARRAY_BUFFER)
-    var size = 4; // 4 components per iteration
-    var type = gl.FLOAT; // the data is 32bit floats
-    var normalize = false; // don't normalize the data
-    var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
-    var offset = 0; // start at the beginning of the buffer
-    gl.vertexAttribPointer(
-      colorLocation,
-      size,
-      type,
-      normalize,
-      stride,
-      offset
-    );
-
     // set the resolution
     gl.uniform2f(resolutionUniformLocation, canvas.width, canvas.height);
-    // Draw the geometry
-    gl.drawArrays(mode, 0, count);
+
+    for (var i = 0; i < arrayOfObjects.length; i++) {
+      // Create a buffer for vertices position
+      var positionBuffer = gl.createBuffer();
+      // Bind the position buffer.
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array(arrayOfObjects[i].vertices),
+        gl.STATIC_DRAW
+      );
+
+      // Turn on the position attribute
+      gl.enableVertexAttribArray(positionLocation);
+      // Tell the attribute how to read vertices buffer
+      var size = 2;
+      var type = gl.FLOAT;
+      var normalized = false;
+      var stride = 0; // Size per vertex
+      var offset = 0;
+      gl.vertexAttribPointer(
+        positionLocation,
+        size,
+        type,
+        normalized,
+        stride,
+        offset
+      );
+
+      // bind the color buffer
+      var colorBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array(arrayOfObjects[i].colors),
+        gl.STATIC_DRAW
+      );
+      // Turn on the color attribute
+      gl.enableVertexAttribArray(colorLocation);
+      // Tell the color attribute how to get data out of colorBuffer (ARRAY_BUFFER)
+      size = 4; // 4 components per iteration
+      type = gl.FLOAT; // the data is 8bit unsigned values
+      normalized = false; // normalize the data (convert from 0-255 to 0-1)
+      stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+      offset = 0; // start at the beginning of the buffer
+      gl.vertexAttribPointer(
+        colorLocation,
+        size,
+        type,
+        normalized,
+        stride,
+        offset
+      );
+
+      var count = arrayOfObjects[i].vertices.length / 2;
+      gl.drawArrays(arrayOfObjects[i].mode, offset, count);
+    }
   }
 
-  // Test
-  var vertices = [0, 373, 418, 123, 700, 400];
-  var vertices2 = [800, 373, 400, 123];
-  drawObject(program, vertices, gl.TRIANGLES, 3);
-  drawObject(program, vertices2, gl.LINES, 2);
+  function getMousePosition(canvas, event) {
+    let rect = canvas.getBoundingClientRect();
+    let x = event.clientX - rect.left;
+    let y = event.clientY - rect.top;
+    return {
+      x: x,
+      y: y
+    }
+}
 
+
+  // Test
+  // var vertices = [0, 373, 418, 123, 700, 400];
+  // var vertices2 = [1, 1, 1130, 1];
+  // // drawObject(program, vertices, gl.TRIANGLES, 3);
+  // drawObject(program, vertices2, gl.LINES, 2);
+  var arrayOfObjects = [];
+  var idxNow = 0
+  var mouseClicked = false;
+  const drawMode = {
+    LINE: 0,
+    SQUARE: 1,
+    RECTANGLE: 2,
+    POLYGON: 3
+  };
+  var drawing = drawMode.LINE // default
   // Mouse click
-  canvas.addEventListener("mousedown", (e) => {
-    console.log(e);
+  canvas.addEventListener("mousedown", (e, target) => {
+    mouseClicked = true
+    const pos = getMousePosition(canvas, e);
+    const x = pos.x
+    const y = pos.y
+
+    if (drawing == drawMode.LINE){
+      var object = {
+        vertices: [],
+        colors: [],
+        mode: gl.LINES,
+      };
+      arrayOfObjects.push(object);
+      arrayOfObjects[idxNow].vertices.push(x,y,x,y);
+      arrayOfObjects[idxNow].colors.push(0,0,0,1,0,0,0,1);
+    }
+
+    drawScreen(program, arrayOfObjects);
   });
 
   // Mouse move
   canvas.addEventListener("mousemove", (e) => {
-    // console.log(e);
+    if(mouseClicked){
+      const pos = getMousePosition(canvas, e);
+      const x = pos.x
+      const y = pos.y
+      if(drawing == drawMode.LINE){
+        for(var i = 0; i < 2; i++){
+          arrayOfObjects[idxNow].vertices.pop();
+        }
+        arrayOfObjects[idxNow].vertices.push(x,y);
+        arrayOfObjects[idxNow].colors.push(0,0,0,1,0,0,0,1);
+      }
+
+      drawScreen(program, arrayOfObjects)
+    }
   });
-}
 
-// Fill the buffer with colors for the 2 triangles
-// that make the rectangle.
-// Note, will put the values in whatever buffer is currently
-// bound to the ARRAY_BUFFER bind point
-function setColors(gl) {
-  // Pick 2 random colors.
-  var r1 = Math.random();
-  var b1 = Math.random();
-  var g1 = Math.random();
-
-  gl.bufferData(
-    gl.ARRAY_BUFFER,
-    new Float32Array([r1, b1, g1, 1, r1, b1, g1, 1, r1, b1, g1, 1]),
-    gl.STATIC_DRAW
-  );
+  canvas.addEventListener("mouseup", function(e){
+    mouseClicked = false;
+    idxNow++
+    // drawScreen(program, arrayOfObjects);
+  });
 }
 
 main();
