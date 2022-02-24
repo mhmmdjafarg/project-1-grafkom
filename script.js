@@ -177,34 +177,64 @@ function main() {
   }
 
   // Initialization of drawing mode
+  const colorBlack = [0, 0, 0, 1]; // just default color
   var arrayOfObjects = [];
   var idxNow = 0;
   var mouseClicked = false;
+
   const drawMode = {
     LINE: 0,
     SQUARE: 1,
     RECTANGLE: 2,
     POLYGON: 3,
   };
-  var drawing = drawMode.LINE; // default
+  var drawing = drawMode.SQUARE; // default
   // Mouse click
   canvas.addEventListener("mousedown", (e, target) => {
     mouseClicked = true;
     const pos = getMousePosition(canvas, e);
     const x = pos.x;
     const y = pos.y;
-
-    if (drawing == drawMode.LINE) {
-      var object = {
-        vertices: [],
-        colors: [],
-        mode: gl.LINES,
-      };
-      arrayOfObjects.push(object);
-      arrayOfObjects[idxNow].vertices.push(x, y, x, y);
-      arrayOfObjects[idxNow].colors.push(0, 0, 0, 1, 0, 0, 0, 1);
+    switch (drawing) {
+      case drawMode.LINE:
+        var object = {
+          vertices: [],
+          colors: [],
+          mode: gl.LINES,
+          shape: drawMode.LINE,
+        };
+        arrayOfObjects.push(object);
+        arrayOfObjects[idxNow].vertices.push(x, y, x, y);
+        arrayOfObjects[idxNow].colors.push(...colorBlack, ...colorBlack);
+        break;
+      case drawMode.SQUARE:
+        var object = {
+          vertices: [],
+          colors: [],
+          mode: gl.LINE_LOOP,
+          shape: drawMode.SQUARE,
+        };
+        arrayOfObjects.push(object);
+        arrayOfObjects[idxNow].vertices.push(x, y, x, y, x, y, x, y);
+        arrayOfObjects[idxNow].colors.push(
+          ...colorBlack,
+          ...colorBlack,
+          ...colorBlack,
+          ...colorBlack
+        );
+        break;
+      default:
+        var object = {
+          vertices: [],
+          colors: [],
+          mode: gl.LINES,
+          shape: drawMode.LINE,
+        };
+        arrayOfObjects.push(object);
+        arrayOfObjects[idxNow].vertices.push(x, y, x, y);
+        arrayOfObjects[idxNow].colors.push(...colorBlack, ...colorBlack);
+        break;
     }
-
     drawScreen(program, arrayOfObjects);
   });
 
@@ -214,12 +244,65 @@ function main() {
       const pos = getMousePosition(canvas, e);
       const x = pos.x;
       const y = pos.y;
-      if (drawing == drawMode.LINE) {
-        for (var i = 0; i < 2; i++) {
-          arrayOfObjects[idxNow].vertices.pop();
-        }
-        arrayOfObjects[idxNow].vertices.push(x, y);
-        arrayOfObjects[idxNow].colors.push(0, 0, 0, 1, 0, 0, 0, 1);
+
+      switch (drawing) {
+        case drawMode.LINE:
+          for (var i = 0; i < 2; i++) {
+            arrayOfObjects[idxNow].vertices.pop();
+          }
+          arrayOfObjects[idxNow].vertices.push(x, y);
+          arrayOfObjects[idxNow].colors.push(...colorBlack);
+          break;
+        case drawMode.SQUARE:
+          for (var j = 0; j < 6; j++) {
+            arrayOfObjects[idxNow].vertices.pop();
+          }
+          // get node poros
+          const nodeX = arrayOfObjects[idxNow].vertices[0];
+          const nodeY = arrayOfObjects[idxNow].vertices[1];
+          var kuadran = screenKuadran(nodeX, nodeY, x, y);
+          var sizer = Math.max(Math.abs(nodeX - x), Math.abs(nodeY - y));
+          if (kuadran == 1) {
+            arrayOfObjects[idxNow].vertices.push(
+              nodeX + sizer,
+              nodeY,
+              nodeX + sizer,
+              nodeY - sizer,
+              nodeX,
+              nodeY - sizer
+            );
+          } else if (kuadran == 2) {
+            arrayOfObjects[idxNow].vertices.push(
+              nodeX - sizer,
+              nodeY,
+              nodeX - sizer,
+              nodeY - sizer,
+              nodeX,
+              nodeY - sizer
+            );
+          } else if (kuadran == 3) {
+            arrayOfObjects[idxNow].vertices.push(
+              nodeX - sizer,
+              nodeY,
+              nodeX - sizer,
+              nodeY + sizer,
+              nodeX,
+              nodeY + sizer
+            );
+          } else if (kuadran == 4) {
+            arrayOfObjects[idxNow].vertices.push(
+              nodeX + sizer,
+              nodeY,
+              nodeX + sizer,
+              nodeY + sizer,
+              nodeX,
+              nodeY + sizer
+            );
+          }
+          break;
+
+        default:
+          break;
       }
 
       drawScreen(program, arrayOfObjects);
@@ -229,8 +312,24 @@ function main() {
   canvas.addEventListener("mouseup", function (e) {
     mouseClicked = false;
     idxNow++;
-    // drawScreen(program, arrayOfObjects);
   });
+}
+
+// Get kuadran dari poros node
+function screenKuadran(nodeX, nodeY, curX, curY) {
+  if (nodeX < curX) {
+    if (nodeY < curY) {
+      return 4;
+    } else {
+      return 1;
+    }
+  } else {
+    if (nodeY < curY) {
+      return 3;
+    } else {
+      return 2;
+    }
+  }
 }
 
 main();
