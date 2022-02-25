@@ -59,6 +59,8 @@ var createShader = function (gl, type, source) {
 function main() {
   // Get canvas context
   const canvas = document.getElementById("canvas");
+  const elementButton = document.getElementsByClassName("element-button")
+  const colorPicker = document.getElementById("color-input");
   const gl = canvas.getContext("webgl");
 
   if (!gl) {
@@ -178,6 +180,7 @@ function main() {
 
   // Initialization of drawing mode
   const colorBlack = [0, 0, 0, 1]; // just default color
+  var currColor = colorBlack;
   var arrayOfObjects = [];
   var idxNow = 0;
   var mouseClicked = false;
@@ -188,7 +191,31 @@ function main() {
     RECTANGLE: 2,
     POLYGON: 3,
   };
-  var drawing = drawMode.SQUARE; // default
+  var drawing = drawMode.LINE; // default
+
+  // Change draw mode
+  for(var i = 0; i < 4; i++){
+    elementButton[i].addEventListener("click", (e) => {
+      switch(e.target.id){
+        case "line-button":
+          drawing = drawMode.LINE;
+          break;
+        case "square-button":
+          drawing = drawMode.SQUARE;
+          break;
+        case "rectangle-button":
+          drawing = drawMode.RECTANGLE;
+          break;
+        case "polygon-button":
+          drawing = drawMode.POLYGON;
+          break;
+        default:
+          drawing = drawMode.LINE;
+          break;
+      }
+    })
+  }
+
   // Mouse click
   canvas.addEventListener("mousedown", (e, target) => {
     mouseClicked = true;
@@ -205,7 +232,7 @@ function main() {
         };
         arrayOfObjects.push(object);
         arrayOfObjects[idxNow].vertices.push(x, y, x, y);
-        arrayOfObjects[idxNow].colors.push(...colorBlack, ...colorBlack);
+        arrayOfObjects[idxNow].colors.push(...currColor, ...currColor);
         break;
       case drawMode.SQUARE:
         var object = {
@@ -217,12 +244,28 @@ function main() {
         arrayOfObjects.push(object);
         arrayOfObjects[idxNow].vertices.push(x, y, x, y, x, y, x, y);
         arrayOfObjects[idxNow].colors.push(
-          ...colorBlack,
-          ...colorBlack,
-          ...colorBlack,
-          ...colorBlack
+          ...currColor,
+          ...currColor,
+          ...currColor,
+          ...currColor
         );
         break;
+        case drawMode.RECTANGLE:
+          var object = {
+            vertices: [],
+            colors: [],
+            mode: gl.LINE_LOOP,
+            shape: drawMode.RECTANGLE,
+          };
+          arrayOfObjects.push(object);
+          arrayOfObjects[idxNow].vertices.push(x, y, x, y, x, y, x, y);
+          arrayOfObjects[idxNow].colors.push(
+            ...currColor,
+            ...currColor,
+            ...currColor,
+            ...currColor
+          );
+          break;
       default:
         var object = {
           vertices: [],
@@ -232,7 +275,7 @@ function main() {
         };
         arrayOfObjects.push(object);
         arrayOfObjects[idxNow].vertices.push(x, y, x, y);
-        arrayOfObjects[idxNow].colors.push(...colorBlack, ...colorBlack);
+        arrayOfObjects[idxNow].colors.push(...currColor, ...currColor);
         break;
     }
     drawScreen(program, arrayOfObjects);
@@ -251,7 +294,7 @@ function main() {
             arrayOfObjects[idxNow].vertices.pop();
           }
           arrayOfObjects[idxNow].vertices.push(x, y);
-          arrayOfObjects[idxNow].colors.push(...colorBlack);
+          arrayOfObjects[idxNow].colors.push(...currColor);
           break;
         case drawMode.SQUARE:
           for (var j = 0; j < 6; j++) {
@@ -300,7 +343,54 @@ function main() {
             );
           }
           break;
-
+        case drawMode.RECTANGLE:
+          for (var j = 0; j < 6; j++) {
+            arrayOfObjects[idxNow].vertices.pop();
+          }
+          // get node poros
+          const nodeRectX = arrayOfObjects[idxNow].vertices[0];
+          const nodeRectY = arrayOfObjects[idxNow].vertices[1];
+          var kuadranRect = screenKuadran(nodeRectX, nodeRectY, x, y);
+          var sizerX = Math.abs(nodeRectX - x)
+          var sizerY = Math.abs(nodeRectY - y)
+          if (kuadranRect == 1) {
+            arrayOfObjects[idxNow].vertices.push(
+              nodeRectX + sizerX,
+              nodeRectY,
+              nodeRectX + sizerX,
+              nodeRectY - sizerY,
+              nodeRectX,
+              nodeRectY - sizerY
+            );
+          } else if (kuadranRect == 2) {
+            arrayOfObjects[idxNow].vertices.push(
+              nodeRectX - sizerX,
+              nodeRectY,
+              nodeRectX - sizerX,
+              nodeRectY - sizerY,
+              nodeRectX,
+              nodeRectY - sizerY
+            );
+          } else if (kuadranRect == 3) {
+            arrayOfObjects[idxNow].vertices.push(
+              nodeRectX - sizerX,
+              nodeRectY,
+              nodeRectX - sizerX,
+              nodeRectY + sizerY,
+              nodeRectX,
+              nodeRectY + sizerY
+            );
+          } else if (kuadranRect == 4) {
+            arrayOfObjects[idxNow].vertices.push(
+              nodeRectX + sizerX,
+              nodeRectY,
+              nodeRectX + sizerX,
+              nodeRectY + sizerY,
+              nodeRectX,
+              nodeRectY + sizerY
+            );
+          }
+          break;
         default:
           break;
       }
@@ -308,6 +398,11 @@ function main() {
       drawScreen(program, arrayOfObjects);
     }
   });
+
+  // Change color
+  colorPicker.addEventListener("change", (e) => {
+    currColor = hexToRgba(e.target.value);
+  })
 
   canvas.addEventListener("mouseup", function (e) {
     mouseClicked = false;
@@ -330,6 +425,15 @@ function screenKuadran(nodeX, nodeY, curX, curY) {
       return 2;
     }
   }
+}
+
+// Change hex to rgba
+function hexToRgba(hexVal){
+  var r = parseInt(hexVal.slice(1,3), 16);
+  var g = parseInt(hexVal.slice(3,5), 16);
+  var b = parseInt(hexVal.slice(5,7), 16);
+  
+  return [r/255, g/255, b/255, 1];
 }
 
 main();
