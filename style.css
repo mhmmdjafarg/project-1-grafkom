@@ -83,6 +83,8 @@
   margin: 4px 2px;
   transition-duration: 0.4s;
   cursor: pointer;
+  border-radius: 20px;
+  background-color: lightgray;
 }
 
 .button1 {
@@ -140,6 +142,11 @@
 
 #color-input {
   width: 100%;
+}
+
+#clear-btn {
+  font-size: medium;
+  height: fit-content;
 }
 
 button {

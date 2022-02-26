@@ -1,25 +1,5 @@
 "use strict";
 
-/**
- * Resize a canvas to match the size its displayed.
- * @param {HTMLCanvasElement} canvas The canvas to resize.
- * @param {number} [multiplier] amount to multiply by.
- *    Pass in window.devicePixelRatio for native pixels.
- * @return {boolean} true if the canvas was resized.
- * @memberOf module:webgl-utils
- */
-function resizeCanvasToDisplaySize(canvas, multiplier) {
-  multiplier = multiplier || 1;
-  const width = (canvas.clientWidth * multiplier) | 0;
-  const height = (canvas.clientHeight * multiplier) | 0;
-  if (canvas.width !== width || canvas.height !== height) {
-    canvas.width = width;
-    canvas.height = height;
-    return true;
-  }
-  return false;
-}
-
 var createProgram = function (gl, vertexShader, fragmentShader) {
   var program = gl.createProgram();
   gl.attachShader(program, vertexShader);
@@ -59,7 +39,9 @@ var createShader = function (gl, type, source) {
 function main() {
   // Get canvas context
   const canvas = document.getElementById("canvas");
-  const elementButton = document.getElementsByClassName("button")
+  const elementButton = document.getElementsByClassName("button-shape");
+  const clearBtn = document.getElementById("clear-btn");
+  const exportBtn = document.getElementById("export-button");
   const colorPicker = document.getElementById("color-input");
   const gl = canvas.getContext("webgl");
 
@@ -200,9 +182,9 @@ function main() {
   var drawing = drawMode.LINE; // default
 
   // Change draw mode
-  for(var i = 0; i < 4; i++){
+  for (var i = 0; i < 4; i++) {
     elementButton[i].addEventListener("click", (e) => {
-      switch(e.target.id){
+      switch (e.target.id) {
         case "line-button":
           drawing = drawMode.LINE;
           break;
@@ -219,7 +201,40 @@ function main() {
           drawing = drawMode.LINE;
           break;
       }
-    })
+    });
+  }
+
+  // Clear button
+  clearBtn.addEventListener("click", (e) => {
+    arrayOfObjects = [];
+    idxNow = 0;
+    drawScreen(program, arrayOfObjects);
+  });
+
+  // Export
+  exportBtn.addEventListener("click", (e) => {
+    saveJsonObjToFile();
+  });
+
+  function saveJsonObjToFile() {
+    var filename = document.getElementById("file-name").value;
+
+    if (!filename) {
+      filename = "data";
+    }
+    // file setting
+    const text = JSON.stringify({ arrayOfObjects: arrayOfObjects, idxNow: idxNow});
+    const name = filename + ".json";
+    const type = "text/plain";
+
+    // create file
+    const a = document.createElement("a");
+    const file = new Blob([text], { type: type });
+    a.href = URL.createObjectURL(file);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 
   // Mouse click
@@ -256,22 +271,22 @@ function main() {
           ...currColor
         );
         break;
-        case drawMode.RECTANGLE:
-          var object = {
-            vertices: [],
-            colors: [],
-            mode: gl.LINE_LOOP,
-            shape: shape.RECTANGLE,
-          };
-          arrayOfObjects.push(object);
-          arrayOfObjects[idxNow].vertices.push(x, y, x, y, x, y, x, y);
-          arrayOfObjects[idxNow].colors.push(
-            ...currColor,
-            ...currColor,
-            ...currColor,
-            ...currColor
-          );
-          break;
+      case drawMode.RECTANGLE:
+        var object = {
+          vertices: [],
+          colors: [],
+          mode: gl.LINE_LOOP,
+          shape: shape.RECTANGLE,
+        };
+        arrayOfObjects.push(object);
+        arrayOfObjects[idxNow].vertices.push(x, y, x, y, x, y, x, y);
+        arrayOfObjects[idxNow].colors.push(
+          ...currColor,
+          ...currColor,
+          ...currColor,
+          ...currColor
+        );
+        break;
       default:
         var object = {
           vertices: [],
@@ -300,7 +315,6 @@ function main() {
             arrayOfObjects[idxNow].vertices.pop();
           }
           arrayOfObjects[idxNow].vertices.push(x, y);
-          arrayOfObjects[idxNow].colors.push(...currColor);
           break;
         case drawMode.SQUARE:
           for (var j = 0; j < 6; j++) {
@@ -357,8 +371,8 @@ function main() {
           const nodeRectX = arrayOfObjects[idxNow].vertices[0];
           const nodeRectY = arrayOfObjects[idxNow].vertices[1];
           var kuadranRect = screenKuadran(nodeRectX, nodeRectY, x, y);
-          var sizerX = Math.abs(nodeRectX - x)
-          var sizerY = Math.abs(nodeRectY - y)
+          var sizerX = Math.abs(nodeRectX - x);
+          var sizerY = Math.abs(nodeRectY - y);
           if (kuadranRect == 1) {
             arrayOfObjects[idxNow].vertices.push(
               nodeRectX + sizerX,
@@ -408,7 +422,7 @@ function main() {
   // Change color
   colorPicker.addEventListener("change", (e) => {
     currColor = hexToRgba(e.target.value);
-  })
+  });
 
   canvas.addEventListener("mouseup", function (e) {
     mouseClicked = false;
@@ -434,12 +448,12 @@ function screenKuadran(nodeX, nodeY, curX, curY) {
 }
 
 // Change hex to rgba
-function hexToRgba(hexVal){
-  var r = parseInt(hexVal.slice(1,3), 16);
-  var g = parseInt(hexVal.slice(3,5), 16);
-  var b = parseInt(hexVal.slice(5,7), 16);
-  
-  return [r/255, g/255, b/255, 1];
+function hexToRgba(hexVal) {
+  var r = parseInt(hexVal.slice(1, 3), 16);
+  var g = parseInt(hexVal.slice(3, 5), 16);
+  var b = parseInt(hexVal.slice(5, 7), 16);
+
+  return [r / 255, g / 255, b / 255, 1];
 }
 
 main();

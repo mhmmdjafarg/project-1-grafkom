@@ -20,13 +20,13 @@
       void main() {
           // convert the position from pixels to 0.0 to 1.0
           vec2 zeroToOne = vPosition / u_resolution;
-       
+
           // convert from 0->1 to 0->2
           vec2 zeroToTwo = zeroToOne * 2.0;
-       
+
           // convert from 0->2 to -1->+1 (clip space)
           vec2 clipSpace = zeroToTwo - 1.0;
-       
+
           gl_Position = vec4(clipSpace.x, clipSpace.y*-1.0, 0, 1);
 
           v_color = a_color;
@@ -38,12 +38,11 @@
       precision mediump float;
 
       varying vec4 v_color;
-      
+
       void main() {
         gl_FragColor = v_color;
       }
     </script>
-
   </head>
   <body>
     <div class="column left panel" style="background-color: #aaa">
@@ -51,41 +50,53 @@
         <button id="import-button">import</button>
       </div>
       <div class="export-container container">
-        <input placeholder="masukkan nama file" type="text" id="file-name" name="file-name">
-        <button id="export-button">export</button>
+        <input
+          placeholder="masukkan nama file"
+          type="text"
+          id="file-name"
+          name="file-name"
+        />
+        <button class="button button1" id="export-button">export</button>
       </div>
-      
-      <p id="title">
-        Elements
-      </p>
+
+      <p id="title">Elements</p>
       <div class="container grid-container">
-        <button class="button button1 element-option-container line-option-container container" id="line-button">
+        <button
+          class="button-shape button button1 element-option-container line-option-container container"
+          id="line-button"
+        >
           Line
         </button>
-        <button class="button button1 element-option-container square-option-container container" id="square-button">
+        <button
+          class="button-shape button button1 element-option-container square-option-container container"
+          id="square-button"
+        >
           Square
         </button>
-        <button class="button button1 element-option-container rectangle-option-container container" id="rectangle-button">
+        <button
+          class="button-shape button button1 element-option-container rectangle-option-container container"
+          id="rectangle-button"
+        >
           Rectangle
         </button>
-        <button class="button button1 element-option-container polygon-option-container container" id="polygon-button">
+        <button
+          class="button-shape button button1 element-option-container polygon-option-container container"
+          id="polygon-button"
+        >
           Polygon
         </button>
       </div>
 
-      <p id="title">
-        Color
-      </p>
+      <p id="title">Color</p>
       <div class="color-picker-container container">
-        <input type="color" id="color-input"/>
+        <input type="color" id="color-input" />
       </div>
 
-      <p id="title">
-        Bantuan
-      </p>
+      <p id="title">Bantuan</p>
       <div class="help-container container">
         <button id="help-button">help</button>
       </div>
+      <button class="clear-btn button button1 container" id="clear-btn">Clear</button>
     </div>
 
     <div class="column right" style="background-color: #bbb">
@@ -94,9 +105,8 @@
 
     <!-- HELP SECTION -->
 
-
-      <!-- Script -->
-      <script src="script.js"></script>
-      <!-- Vertex Shader -->
+    <!-- Script -->
+    <script src="script.js"></script>
+    <!-- Vertex Shader -->
   </body>
 </html>
