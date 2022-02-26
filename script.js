@@ -438,8 +438,10 @@ function main() {
 
   canvas.addEventListener("mouseup", function (e) {
     mouseClicked = false;
-    idxNow++;
-    if (drawMode.CHANGE && changeObject.idxObj != -1) {
+    if(drawing != drawMode.CHANGE){
+      idxNow++;
+    }
+    if (drawing == drawMode.CHANGE && changeObject.idxObj != -1) {
       const pos = getMousePosition(canvas, e);
       const x = pos.x;
       const y = pos.y;
