@@ -59,7 +59,7 @@ var createShader = function (gl, type, source) {
 function main() {
   // Get canvas context
   const canvas = document.getElementById("canvas");
-  const elementButton = document.getElementsByClassName("element-button")
+  const elementButton = document.getElementsByClassName("button")
   const colorPicker = document.getElementById("color-input");
   const gl = canvas.getContext("webgl");
 
