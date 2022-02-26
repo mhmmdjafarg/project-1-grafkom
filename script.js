@@ -567,8 +567,87 @@ function changeNode(changeObject, finalX, finalY, arrayOfObjects) {
     arrayOfObjects[changeObject.idxObj].vertices[changeObject.idxPoint + 1] =
       finalY;
   } else if (arrayOfObjects[changeObject.idxObj].shape == "square") {
+    const idxNode = getCrossPoint(
+      arrayOfObjects[changeObject.idxObj].vertices,
+      changeObject.x,
+      changeObject.y
+    );
+    // get node poros
+    const nodeX = arrayOfObjects[changeObject.idxObj].vertices[idxNode];
+    const nodeY = arrayOfObjects[changeObject.idxObj].vertices[idxNode + 1];
+    var kuadran = screenKuadran(nodeX, nodeY, finalX, finalY);
+    var sizer = Math.max(Math.abs(nodeX - finalX), Math.abs(nodeY - finalY));
+    arrayOfObjects[changeObject.idxObj].vertices = getScaledSquare(
+      nodeX,
+      nodeY,
+      sizer,
+      kuadran
+    );
   } else if (arrayOfObjects[changeObject.idxObj].shape == "rectangle") {
   } else if (arrayOfObjects[changeObject.idxObj].shape == "polygon") {
+  }
+}
+
+/**
+ * Fungsi untuk mengambil index titik yang berseberangan dengan yang sedang di klik untuk dijadikan node poros
+ * @param {*} squarePoints
+ * @param {*} selectedX
+ * @param {*} selectedY
+ */
+function getCrossPoint(squarePoints, selectedX, selectedY) {
+  for (let i = 0; i < squarePoints.length; i += 2) {
+    if (squarePoints[i] != selectedX && squarePoints[i + 1] != selectedY) {
+      return i;
+    }
+  }
+  return 0;
+}
+
+function getScaledSquare(nodeX, nodeY, sizer, kuadran) {
+  if (kuadran == 1) {
+    return [
+      nodeX,
+      nodeY,
+      nodeX + sizer,
+      nodeY,
+      nodeX + sizer,
+      nodeY - sizer,
+      nodeX,
+      nodeY - sizer,
+    ];
+  } else if (kuadran == 2) {
+    return [
+      nodeX,
+      nodeY,
+      nodeX - sizer,
+      nodeY,
+      nodeX - sizer,
+      nodeY - sizer,
+      nodeX,
+      nodeY - sizer,
+    ];
+  } else if (kuadran == 3) {
+    return [
+      nodeX,
+      nodeY,
+      nodeX - sizer,
+      nodeY,
+      nodeX - sizer,
+      nodeY + sizer,
+      nodeX,
+      nodeY + sizer,
+    ];
+  } else if (kuadran == 4) {
+    return [
+      nodeX,
+      nodeY,
+      nodeX + sizer,
+      nodeY,
+      nodeX + sizer,
+      nodeY + sizer,
+      nodeX,
+      nodeY + sizer,
+    ];
   }
 }
 
