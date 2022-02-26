@@ -42,6 +42,7 @@ function main() {
   const elementButton = document.getElementsByClassName("button-shape");
   const clearBtn = document.getElementById("clear-btn");
   const exportBtn = document.getElementById("export-button");
+  const importBtn = document.getElementById("import_file");
   const colorPicker = document.getElementById("color-input");
   const gl = canvas.getContext("webgl");
 
@@ -213,29 +214,27 @@ function main() {
 
   // Export
   exportBtn.addEventListener("click", (e) => {
-    saveJsonObjToFile();
+    saveJsonObjToFile(arrayOfObjects, idxNow);
   });
 
-  function saveJsonObjToFile() {
-    var filename = document.getElementById("file-name").value;
-
-    if (!filename) {
-      filename = "data";
+  // Import
+  importBtn.addEventListener("change", (e) => {
+    var file = document.getElementById("import_file").files[0];
+    var reader = new FileReader();
+    // var data = [];
+    reader.onload = function (e) {
+      console.log("file imported");
+      const arrObjects = JSON.parse(e.target.result);
+      arrayOfObjects = arrObjects.arrayOfObjects
+      idxNow = parseInt(arrObjects.idxNow) 
+      drawScreen(program, arrayOfObjects)
+    };
+  
+    reader.readAsText(file);
+    if (!file) {
+      alert("Blank file");
     }
-    // file setting
-    const text = JSON.stringify({ arrayOfObjects: arrayOfObjects, idxNow: idxNow});
-    const name = filename + ".json";
-    const type = "text/plain";
-
-    // create file
-    const a = document.createElement("a");
-    const file = new Blob([text], { type: type });
-    a.href = URL.createObjectURL(file);
-    a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }
+  })
 
   // Mouse click
   canvas.addEventListener("mousedown", (e, target) => {
@@ -455,5 +454,48 @@ function hexToRgba(hexVal) {
 
   return [r / 255, g / 255, b / 255, 1];
 }
+
+function saveJsonObjToFile(arrayOfObjects, idxNow) {
+  var filename = document.getElementById("file-name").value;
+
+  if (!filename) {
+    filename = "data";
+  }
+  // file setting
+  const text = JSON.stringify({
+    arrayOfObjects: arrayOfObjects,
+    idxNow: idxNow,
+  });
+  const name = filename + ".json";
+  const type = "text/plain";
+
+  // create file
+  const a = document.createElement("a");
+  const file = new Blob([text], { type: type });
+  a.href = URL.createObjectURL(file);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+var importFile = function () {
+  var file = document.getElementById("import_file").files[0];
+  var reader = new FileReader();
+  // var data = [];
+  reader.onload = function (e) {
+    console.log("file imported");
+    const arrObjects = JSON.parse(e.target.result);
+    arrayOfObjects = arrObjects.arrayOfObjects
+    idxNow = arrObjects.idxNow
+    drawScreen()
+    return;
+  };
+
+  reader.readAsText(file);
+  if (!file) {
+    alert("Blank file");
+  }
+};
 
 main();
