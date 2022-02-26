@@ -191,6 +191,12 @@ function main() {
     RECTANGLE: 2,
     POLYGON: 3,
   };
+  const shape = {
+    LINE: "line",
+    SQUARE: "square",
+    RECTANGLE: "rectangle",
+    POLYGON: "polygon",
+  };
   var drawing = drawMode.LINE; // default
 
   // Change draw mode
@@ -228,7 +234,7 @@ function main() {
           vertices: [],
           colors: [],
           mode: gl.LINES,
-          shape: drawMode.LINE,
+          shape: shape.LINE,
         };
         arrayOfObjects.push(object);
         arrayOfObjects[idxNow].vertices.push(x, y, x, y);
@@ -239,7 +245,7 @@ function main() {
           vertices: [],
           colors: [],
           mode: gl.LINE_LOOP,
-          shape: drawMode.SQUARE,
+          shape: shape.SQUARE,
         };
         arrayOfObjects.push(object);
         arrayOfObjects[idxNow].vertices.push(x, y, x, y, x, y, x, y);
@@ -255,7 +261,7 @@ function main() {
             vertices: [],
             colors: [],
             mode: gl.LINE_LOOP,
-            shape: drawMode.RECTANGLE,
+            shape: shape.RECTANGLE,
           };
           arrayOfObjects.push(object);
           arrayOfObjects[idxNow].vertices.push(x, y, x, y, x, y, x, y);
@@ -271,7 +277,7 @@ function main() {
           vertices: [],
           colors: [],
           mode: gl.LINES,
-          shape: drawMode.LINE,
+          shape: shape.LINE,
         };
         arrayOfObjects.push(object);
         arrayOfObjects[idxNow].vertices.push(x, y, x, y);
