@@ -167,12 +167,19 @@ function main() {
   var arrayOfObjects = [];
   var idxNow = 0;
   var mouseClicked = false;
+  var changeObject = {
+    // init
+    idxObj: -1,
+    x: -1,
+    y: -1,
+  };
 
   const drawMode = {
     LINE: 0,
     SQUARE: 1,
     RECTANGLE: 2,
     POLYGON: 3,
+    CHANGE: 4,
   };
   const shape = {
     LINE: "line",
@@ -183,7 +190,7 @@ function main() {
   var drawing = drawMode.LINE; // default
 
   // Change draw mode
-  for (var i = 0; i < 4; i++) {
+  for (var i = 0; i < 5; i++) {
     elementButton[i].addEventListener("click", (e) => {
       switch (e.target.id) {
         case "line-button":
@@ -197,6 +204,9 @@ function main() {
           break;
         case "polygon-button":
           drawing = drawMode.POLYGON;
+          break;
+        case "changenode-button":
+          drawing = drawMode.CHANGE;
           break;
         default:
           drawing = drawMode.LINE;
@@ -225,16 +235,16 @@ function main() {
     reader.onload = function (e) {
       console.log("file imported");
       const arrObjects = JSON.parse(e.target.result);
-      arrayOfObjects = arrObjects.arrayOfObjects
-      idxNow = parseInt(arrObjects.idxNow) 
-      drawScreen(program, arrayOfObjects)
+      arrayOfObjects = arrObjects.arrayOfObjects;
+      idxNow = parseInt(arrObjects.idxNow);
+      drawScreen(program, arrayOfObjects);
     };
-  
+
     reader.readAsText(file);
     if (!file) {
       alert("Blank file");
     }
-  })
+  });
 
   // Mouse click
   canvas.addEventListener("mousedown", (e, target) => {
@@ -285,6 +295,9 @@ function main() {
           ...currColor,
           ...currColor
         );
+        break;
+      case drawMode.CHANGE:
+        changeObject = getNearestPoint(x, y, arrayOfObjects);
         break;
       default:
         var object = {
@@ -426,6 +439,13 @@ function main() {
   canvas.addEventListener("mouseup", function (e) {
     mouseClicked = false;
     idxNow++;
+    if (drawMode.CHANGE && changeObject.idxObj != -1) {
+      const pos = getMousePosition(canvas, e);
+      const x = pos.x;
+      const y = pos.y;
+      changeNode(changeObject, x, y, arrayOfObjects);
+      drawScreen(program, arrayOfObjects);
+    }
   });
 }
 
@@ -486,9 +506,9 @@ var importFile = function () {
   reader.onload = function (e) {
     console.log("file imported");
     const arrObjects = JSON.parse(e.target.result);
-    arrayOfObjects = arrObjects.arrayOfObjects
-    idxNow = arrObjects.idxNow
-    drawScreen()
+    arrayOfObjects = arrObjects.arrayOfObjects;
+    idxNow = arrObjects.idxNow;
+    drawScreen();
     return;
   };
 
@@ -497,5 +517,59 @@ var importFile = function () {
     alert("Blank file");
   }
 };
+
+function calcDistance(x1, y1, x2, y2) {
+  return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+}
+
+function getNearestPoint(currX, currY, arrayOfObjects) {
+  let nearestDistance = 9999999;
+  const threshold = 10;
+  let idxObj = -1; // index dimana object berada di array of objects
+  let nextX = -1;
+  let nextY = -1;
+  let idxPoint = -1; // index dimana titik x berada pada vertices
+  arrayOfObjects.forEach((element, index) => {
+    for (let i = 0; i < element.vertices.length; i += 2) {
+      let currDistance = calcDistance(
+        currX,
+        currY,
+        element.vertices[i],
+        element.vertices[i + 1]
+      );
+      if (nearestDistance > currDistance && currDistance <= threshold) {
+        nearestDistance = currDistance;
+        idxPoint = i;
+        nextX = element.vertices[i];
+        nextY = element.vertices[i + 1];
+        idxObj = index;
+      }
+    }
+  });
+  return {
+    idxObj: idxObj,
+    x: nextX,
+    y: nextY,
+    idxPoint: idxPoint,
+  };
+}
+
+/**
+ *
+ * @param changeObject changeObject berisi idxObject pada arrayOfObject beserta titik x y diklik
+ * @param finalX titik X ditarik kemana
+ * @param finalY titik Y ditarik kemana
+ */
+function changeNode(changeObject, finalX, finalY, arrayOfObjects) {
+  if (arrayOfObjects[changeObject.idxObj].shape == "line") {
+    arrayOfObjects[changeObject.idxObj].vertices[changeObject.idxPoint] =
+      finalX;
+    arrayOfObjects[changeObject.idxObj].vertices[changeObject.idxPoint + 1] =
+      finalY;
+  } else if (arrayOfObjects[changeObject.idxObj].shape == "square") {
+  } else if (arrayOfObjects[changeObject.idxObj].shape == "rectangle") {
+  } else if (arrayOfObjects[changeObject.idxObj].shape == "polygon") {
+  }
+}
 
 main();
