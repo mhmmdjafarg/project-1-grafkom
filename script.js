@@ -296,6 +296,44 @@ function main() {
           ...currColor
         );
         break;
+      case drawMode.POLYGON:
+        if(idxNow != (arrayOfObjects.length -1) ) {
+          var object = {
+            vertices: [],
+            colors: [],
+            shape: shape.POLYGON,
+          };
+          arrayOfObjects.push(object);
+        }
+
+        // Jika masih 2 vertex yang tersedia, maka akan menggambar garis aja
+        // Jika melebihi 2, maka akan menggambar segitiga
+        if(arrayOfObjects[idxNow].vertices.length/2 < 3) {
+          arrayOfObjects[idxNow].mode = gl.LINE_LOOP
+        } else {
+          arrayOfObjects[idxNow].mode = gl.TRIANGLE_FAN
+        }
+
+        // Hapus titik dari hasil mousemove
+        for (var i = 0; i < 2; i++) {
+          arrayOfObjects[idxNow].vertices.pop();
+        }
+
+        // Mengecek apakah sudah vertex sudah mencapai titik awal
+        var nearestPoint = getNearestPoint(x,y,arrayOfObjects);
+
+        if(nearestPoint.idxObj == idxNow && nearestPoint.idxPoint == 0 && arrayOfObjects[idxNow].vertices.length/2 >= 3) {
+          mouseClicked = false;
+          idxNow++;
+
+        } else {
+
+          // Tambahkan titik setelah klik dan titik sebagai pergerakan mouse
+          arrayOfObjects[idxNow].vertices.push(x, y, x, y);
+          arrayOfObjects[idxNow].colors.push(...currColor, ...currColor);
+        }
+        
+        break;
       case drawMode.CHANGE:
         changeObject = getNearestPoint(x, y, arrayOfObjects);
         break;
@@ -423,6 +461,14 @@ function main() {
             );
           }
           break;
+
+        case drawMode.POLYGON:
+          for (var i = 0; i < 2; i++) {
+            arrayOfObjects[idxNow].vertices.pop();
+          }
+          arrayOfObjects[idxNow].vertices.push(x, y);
+          break;
+          
         default:
           break;
       }
@@ -437,16 +483,18 @@ function main() {
   });
 
   canvas.addEventListener("mouseup", function (e) {
-    mouseClicked = false;
-    if(drawing != drawMode.CHANGE){
-      idxNow++;
-    }
-    if (drawing == drawMode.CHANGE && changeObject.idxObj != -1) {
-      const pos = getMousePosition(canvas, e);
-      const x = pos.x;
-      const y = pos.y;
-      changeNode(changeObject, x, y, arrayOfObjects);
-      drawScreen(program, arrayOfObjects);
+    if(drawing != drawMode.POLYGON) {
+      mouseClicked = false;
+        if(drawing != drawMode.CHANGE){
+          idxNow++;
+        }
+        if (drawing == drawMode.CHANGE && changeObject.idxObj != -1) {
+          const pos = getMousePosition(canvas, e);
+          const x = pos.x;
+          const y = pos.y;
+          changeNode(changeObject, x, y, arrayOfObjects);
+          drawScreen(program, arrayOfObjects);
+        }
     }
   });
 }
