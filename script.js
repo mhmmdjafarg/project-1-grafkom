@@ -332,7 +332,7 @@ function main() {
           arrayOfObjects[idxNow].vertices.push(x, y, x, y);
           arrayOfObjects[idxNow].colors.push(...currColor, ...currColor);
         }
-        
+
         break;
       case drawMode.CHANGE:
         changeObject = getNearestPoint(x, y, arrayOfObjects);
@@ -485,16 +485,19 @@ function main() {
   canvas.addEventListener("mouseup", function (e) {
     if(drawing != drawMode.POLYGON) {
       mouseClicked = false;
-        if(drawing != drawMode.CHANGE){
-          idxNow++;
-        }
-        if (drawing == drawMode.CHANGE && changeObject.idxObj != -1) {
-          const pos = getMousePosition(canvas, e);
-          const x = pos.x;
-          const y = pos.y;
-          changeNode(changeObject, x, y, arrayOfObjects);
-          drawScreen(program, arrayOfObjects);
-        }
+
+      if(drawing != drawMode.CHANGE){
+        idxNow++;
+      }
+      if (drawing == drawMode.CHANGE && changeObject.idxObj != -1) {
+        console.log(changeObject)
+        console.log(arrayOfObjects)
+        const pos = getMousePosition(canvas, e);
+        const x = pos.x;
+        const y = pos.y;
+        changeNode(changeObject, x, y, arrayOfObjects);
+        drawScreen(program, arrayOfObjects);
+      }
     }
   });
 }
@@ -653,6 +656,10 @@ function changeNode(changeObject, finalX, finalY, arrayOfObjects) {
       kuadran
     );
   } else if (arrayOfObjects[changeObject.idxObj].shape == "polygon") {
+    arrayOfObjects[changeObject.idxObj].vertices[changeObject.idxPoint] =
+      finalX;
+    arrayOfObjects[changeObject.idxObj].vertices[changeObject.idxPoint + 1] =
+      finalY;
   }
 }
 
