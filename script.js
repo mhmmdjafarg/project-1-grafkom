@@ -586,6 +586,24 @@ function changeNode(changeObject, finalX, finalY, arrayOfObjects) {
       kuadran
     );
   } else if (arrayOfObjects[changeObject.idxObj].shape == "rectangle") {
+    const idxNode = getCrossPoint(
+      arrayOfObjects[changeObject.idxObj].vertices,
+      changeObject.x,
+      changeObject.y
+    );
+    // get node poros
+    const nodeX = arrayOfObjects[changeObject.idxObj].vertices[idxNode];
+    const nodeY = arrayOfObjects[changeObject.idxObj].vertices[idxNode + 1];
+    var kuadran = screenKuadran(nodeX, nodeY, finalX, finalY);
+    var sizerX = Math.abs(nodeX - finalX);
+    var sizerY = Math.abs(nodeY - finalY);
+    arrayOfObjects[changeObject.idxObj].vertices = getScaledRectangle(
+      nodeX,
+      nodeY,
+      sizerX,
+      sizerY,
+      kuadran
+    );
   } else if (arrayOfObjects[changeObject.idxObj].shape == "polygon") {
   }
 }
@@ -651,6 +669,69 @@ function getScaledSquare(nodeX, nodeY, sizer, kuadran) {
       nodeY + sizer,
     ];
   }
+}
+
+function getScaledRectangle(nodeX, nodeY, sizerX, sizerY, kuadran) {
+  if (kuadran == 1) {
+    return [
+      nodeX,
+      nodeY,
+      nodeX + sizerX,
+      nodeY,
+      nodeX + sizerX,
+      nodeY - sizerY,
+      nodeX,
+      nodeY - sizerY,
+    ];
+  } else if (kuadran == 2) {
+    return [
+      nodeX,
+      nodeY,
+      nodeX - sizerX,
+      nodeY,
+      nodeX - sizerX,
+      nodeY - sizerY,
+      nodeX,
+      nodeY - sizerY,
+    ];
+  } else if (kuadran == 3) {
+    return [
+      nodeX,
+      nodeY,
+      nodeX - sizerX,
+      nodeY,
+      nodeX - sizerX,
+      nodeY + sizerY,
+      nodeX,
+      nodeY + sizerY,
+    ];
+  } else if (kuadran == 4) {
+    return [
+      nodeX,
+      nodeY,
+      nodeX + sizerX,
+      nodeY,
+      nodeX + sizerX,
+      nodeY + sizerY,
+      nodeX,
+      nodeY + sizerY,
+    ];
+  }
+}
+
+// Get help button and section
+var helpSection = document.getElementById('help-section');
+var helpButton = document.getElementById('help-button');
+var helpSpan = document.getElementsByClassName('close')[0];
+
+// Open help section
+helpButton.onclick = function(){
+  helpSection.style.display = "block";
+}
+
+// Close help section by click x
+helpSpan.onclick = function(){
+  helpSection.style.display = "none";
 }
 
 main();
