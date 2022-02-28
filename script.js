@@ -180,6 +180,7 @@ function main() {
     RECTANGLE: 2,
     POLYGON: 3,
     CHANGE: 4,
+    CHANGE_COLOR : 5
   };
   const shape = {
     LINE: "line",
@@ -190,7 +191,7 @@ function main() {
   var drawing = drawMode.LINE; // default
 
   // Change draw mode
-  for (var i = 0; i < 5; i++) {
+  for (var i = 0; i < 6; i++) {
     elementButton[i].addEventListener("click", (e) => {
       switch (e.target.id) {
         case "line-button":
@@ -207,6 +208,9 @@ function main() {
           break;
         case "changenode-button":
           drawing = drawMode.CHANGE;
+          break;
+        case "change-polygon-color-button":
+          drawing = drawMode.CHANGE_COLOR;
           break;
         default:
           drawing = drawMode.LINE;
@@ -252,6 +256,7 @@ function main() {
     const pos = getMousePosition(canvas, e);
     const x = pos.x;
     const y = pos.y;
+
     switch (drawing) {
       case drawMode.LINE:
         var object = {
@@ -337,6 +342,25 @@ function main() {
       case drawMode.CHANGE:
         changeObject = getNearestPoint(x, y, arrayOfObjects);
         break;
+      case drawMode.CHANGE_COLOR:
+        var found = false;
+        arrayOfObjects.forEach((element,idx) => {
+          if(!found) {
+            if(element.shape == shape.POLYGON) {
+              if(isInsideFigure({x,y},element.vertices)){
+                for (let j = 0; j < element.colors.length; j+=4) {
+                  arrayOfObjects[idx].colors[j] = currColor[0];
+                  arrayOfObjects[idx].colors[j+1] = currColor[1];
+                  arrayOfObjects[idx].colors[j+2] = currColor[2];
+                  arrayOfObjects[idx].colors[j+3] = currColor[3];
+                }
+                found = true;
+              }
+            }
+          }
+        });
+        
+        break;
       default:
         var object = {
           vertices: [],
@@ -349,6 +373,7 @@ function main() {
         arrayOfObjects[idxNow].colors.push(...currColor, ...currColor);
         break;
     }
+
     drawScreen(program, arrayOfObjects);
   });
 
@@ -466,6 +491,7 @@ function main() {
           for (var i = 0; i < 2; i++) {
             arrayOfObjects[idxNow].vertices.pop();
           }
+
           arrayOfObjects[idxNow].vertices.push(x, y);
           break;
           
@@ -486,12 +512,10 @@ function main() {
     if(drawing != drawMode.POLYGON) {
       mouseClicked = false;
 
-      if(drawing != drawMode.CHANGE){
+      if(drawing != drawMode.CHANGE && drawing != drawMode.POLYGON && drawing != drawMode.CHANGE_COLOR){
         idxNow++;
       }
       if (drawing == drawMode.CHANGE && changeObject.idxObj != -1) {
-        console.log(changeObject)
-        console.log(arrayOfObjects)
         const pos = getMousePosition(canvas, e);
         const x = pos.x;
         const y = pos.y;
@@ -772,6 +796,46 @@ function getScaledRectangle(nodeX, nodeY, sizerX, sizerY, kuadran) {
       nodeY + sizerY,
     ];
   }
+}
+
+function isInsideFigure(sourcePoint, points) {
+  for (let i = 4; i < points.length; i+=2) {
+    const x_origin = points[0];
+    const y_origin = points[1];
+
+    const x_prev = points[i-2];
+    const y_prev = points[i-1];
+
+    const x = points[i];
+    const y = points[i+1];
+
+    if((checkTwoDirection(sourcePoint.x,x_origin,x_prev) && checkTwoDirection(sourcePoint.y,y_origin,y_prev)) || (checkTwoDirection(sourcePoint.x,x_origin,x) && checkTwoDirection(sourcePoint.y,y_origin,y)) || (checkTwoDirection(sourcePoint.x,x,x_prev) && checkTwoDirection(sourcePoint.y,y,y_prev))){
+      return true;
+    }
+  }
+  return false;
+}
+
+function checkTwoDirection(x, x1,x2) {
+  if((x < x1 && x > x2) || (x < x2 && x > x1)){
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function isArrayEqual(a1,a2) {
+  if(a1.length != a2.length) {
+    return false;
+  }
+  for (let i = 0; i < a1.length; i++) {
+    const element1 = a1[i];
+    const element2 = a2[i];
+    if(element1 != element2) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Get help button and section
